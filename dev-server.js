@@ -8,8 +8,8 @@ const app = express();
 const PORT = 5001;
 
 // MongoDB configuration
-const MONGODB_URI = 'mongodb+srv://Vidit:Vidit%40123@cluster0.biw23mt.mongodb.net/appointmentDB';
-const JWT_SECRET = 'your-secret-key-here-make-it-long-and-secure';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://Vidit:Vidit%40123@cluster0.biw23mt.mongodb.net/appointmentDB';
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-here-make-it-long-and-secure';
 
 // Middleware
 app.use(cors());
@@ -17,13 +17,23 @@ app.use(express.json());
 
 // Connect to MongoDB
 let db;
+
+console.log('🔄 Connecting to MongoDB...');
+console.log('MongoDB URI:', MONGODB_URI.replace(/\/\/.*:.*@/, '//***:***@')); // Hide credentials
+
 MongoClient.connect(MONGODB_URI)
   .then(client => {
     console.log('✅ Connected to MongoDB');
     db = client.db();
+    
+    // Start server only after DB connection
+    app.listen(PORT, () => {
+      console.log(`🚀 Development server running on http://localhost:${PORT}`);
+    });
   })
   .catch(error => {
     console.error('❌ MongoDB connection error:', error);
+    console.error('Error details:', error.message);
     process.exit(1);
   });
 
@@ -272,6 +282,4 @@ app.get('/health', (req, res) => {
   res.json({ status: 'OK', message: 'Development server is running' });
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 Development server running on http://localhost:${PORT}`);
-});
+// Server will be started after MongoDB connection is established
