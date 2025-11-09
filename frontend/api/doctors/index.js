@@ -1,4 +1,4 @@
-import { MongoClient } from 'mongodb';
+import { MongoClient, ObjectId } from 'mongodb';
 
 const MONGODB_URI = 'mongodb+srv://Vidit:Vidit%40123@cluster0.biw23mt.mongodb.net/appointmentDB';
 
@@ -26,7 +26,12 @@ export default async function handler(req, res) {
           location: 'New York',
           consultationFee: 150,
           rating: 4.8,
-          availability: ['9:00 AM', '10:00 AM', '11:00 AM', '2:00 PM', '3:00 PM', '4:00 PM']
+          availability: ['9:00 AM', '10:00 AM', '11:00 AM', '2:00 PM', '3:00 PM', '4:00 PM'],
+          user: {
+            name: 'Dr. John Smith',
+            email: 'john.smith@hospital.com'
+          },
+          fee: 150
         },
         {
           name: 'Dr. Sarah Johnson',
@@ -35,7 +40,12 @@ export default async function handler(req, res) {
           location: 'Los Angeles',
           consultationFee: 120,
           rating: 4.9,
-          availability: ['10:00 AM', '11:00 AM', '1:00 PM', '2:00 PM', '3:00 PM']
+          availability: ['10:00 AM', '11:00 AM', '1:00 PM', '2:00 PM', '3:00 PM'],
+          user: {
+            name: 'Dr. Sarah Johnson',
+            email: 'sarah.johnson@hospital.com'
+          },
+          fee: 120
         },
         {
           name: 'Dr. Michael Brown',
@@ -44,7 +54,12 @@ export default async function handler(req, res) {
           location: 'Chicago',
           consultationFee: 180,
           rating: 4.7,
-          availability: ['9:00 AM', '10:00 AM', '2:00 PM', '3:00 PM', '4:00 PM', '5:00 PM']
+          availability: ['9:00 AM', '10:00 AM', '2:00 PM', '3:00 PM', '4:00 PM', '5:00 PM'],
+          user: {
+            name: 'Dr. Michael Brown',
+            email: 'michael.brown@hospital.com'
+          },
+          fee: 180
         },
         {
           name: 'Dr. Emily Davis',
@@ -53,7 +68,12 @@ export default async function handler(req, res) {
           location: 'Houston',
           consultationFee: 100,
           rating: 4.8,
-          availability: ['8:00 AM', '9:00 AM', '10:00 AM', '11:00 AM', '2:00 PM', '3:00 PM']
+          availability: ['8:00 AM', '9:00 AM', '10:00 AM', '11:00 AM', '2:00 PM', '3:00 PM'],
+          user: {
+            name: 'Dr. Emily Davis',
+            email: 'emily.davis@hospital.com'
+          },
+          fee: 100
         }
       ];
 

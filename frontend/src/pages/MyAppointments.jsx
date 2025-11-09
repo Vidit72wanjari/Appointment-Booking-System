@@ -17,7 +17,7 @@ const MyAppointments = () => {
   const fetchAppointments = async () => {
     try {
       const response = await api.get('/appointments/my-appointments');
-      setAppointments(response.data.data);
+      setAppointments(response.data);
     } catch (error) {
       console.error('Error fetching appointments:', error);
     } finally {
@@ -143,9 +143,8 @@ const MyAppointments = () => {
             <div key={appointment._id} className="card">
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div style={{ flex: 1 }}>
-                  <h2>{appointment.doctor.name}</h2>
-                  <p><strong>Specialization:</strong> {appointment.doctor.specialization}</p>
-                  <p><strong>Fee:</strong> ₹{appointment.doctor.fee}</p>
+                  <h2>{appointment.doctorName}</h2>
+                  <p><strong>Specialization:</strong> {appointment.specialization}</p>
                   <p><strong>Date:</strong> {formatDate(appointment.date)}</p>
                   <p><strong>Time:</strong> {appointment.timeSlot}</p>
                   <p><strong>Symptoms:</strong> {appointment.symptoms}</p>

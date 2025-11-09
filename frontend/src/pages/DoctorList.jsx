@@ -21,11 +21,8 @@ const DoctorList = () => {
             const response = await getAllDoctors();
             console.log('Doctors response:', response.data);
             
-            if (response.data.success) {
-                setDoctors(response.data.data);
-            } else {
-                setError('Failed to fetch doctors');
-            }
+            // Our API returns doctors array directly
+            setDoctors(response.data);
         } catch (err) {
             console.error('Error fetching doctors:', err);
             setError(err.response?.data?.message || 'Error loading doctors');
@@ -105,13 +102,13 @@ const DoctorList = () => {
                                 
                                 <div style={styles.cardBody}>
                                     <p style={styles.specialization}>{doctor.specialization}</p>
-                                    <p style={styles.info}>Experience: {doctor.experience} years</p>
-                                    <p style={styles.info}>Patients: {doctor.totalPatients}+</p>
-                                    <p style={styles.fee}>₹{doctor.fee} per consultation</p>
+                                    <p style={styles.info}>Experience: {doctor.experience}</p>
+                                    <p style={styles.info}>Location: {doctor.location}</p>
+                                    <p style={styles.fee}>₹{doctor.consultationFee || doctor.fee} per consultation</p>
                                     
                                     <div style={styles.availability}>
-                                        <strong>Available:</strong>
-                                        <p>{doctor.availability.days.join(', ')}</p>
+                                        <strong>Available Time Slots:</strong>
+                                        <p>{doctor.availability?.join(', ')}</p>
                                     </div>
                                 </div>
                                 

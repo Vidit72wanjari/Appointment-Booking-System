@@ -1,6 +1,3 @@
-// Book Appointment Page
-// Created by: Vidit Wanjari
-
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../services/api';
@@ -10,6 +7,7 @@ const BookAppointment = () => {
   const navigate = useNavigate();
   const [doctor, setDoctor] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     date: '',
     timeSlot: '',
@@ -33,6 +31,7 @@ const BookAppointment = () => {
       const response = await api.get(`/doctors/${doctorId}`);
       setDoctor(response.data.data);
     } catch (error) {
+      console.error('Error fetching doctor:', error);
       setError('Doctor not found');
     } finally {
       setLoading(false);
@@ -47,10 +46,12 @@ const BookAppointment = () => {
     e.preventDefault();
     setError('');
     setSuccess('');
+    setSubmitting(true);
 
     // Validate form data
     if (!formData.date || !formData.timeSlot || !formData.symptoms) {
       setError('Please fill in all required fields');
+      setSubmitting(false);
       return;
     }
 
@@ -61,25 +62,32 @@ const BookAppointment = () => {
     
     if (selectedDate < today) {
       setError('Please select a future date');
+      setSubmitting(false);
       return;
     }
 
     // Validate symptoms length
     if (formData.symptoms.trim().length < 10) {
       setError('Please provide more detailed symptoms (at least 10 characters)');
+      setSubmitting(false);
       return;
     }
 
     try {
       const response = await api.post('/appointments', {
         doctor: doctorId,
-        ...formData
+        date: formData.date,
+        timeSlot: formData.timeSlot,
+        symptoms: formData.symptoms
       });
       
       setSuccess('Appointment booked successfully! Redirecting to your appointments...');
       setTimeout(() => navigate('/my-appointments'), 2000);
     } catch (err) {
+      console.error('Booking error:', err);
       setError(err.response?.data?.message || 'Failed to book appointment');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -113,9 +121,12 @@ const BookAppointment = () => {
         
         <h1>Book Appointment</h1>
         <div style={{ background: '#f7fafc', padding: '20px', borderRadius: '8px', marginBottom: '20px' }}>
-          <h2>{doctor.user.name}</h2>
+          <h2>{doctor.name}</h2>
           <p><strong>Specialization:</strong> {doctor.specialization}</p>
-          <p><strong>Fee:</strong> ₹{doctor.fee}</p>
+          <p><strong>Experience:</strong> {doctor.experience}</p>
+          <p><strong>Location:</strong> {doctor.location}</p>
+          <p><strong>Fee:</strong> ₹{doctor.consultationFee || doctor.fee}</p>
+          <p><strong>Rating:</strong> ⭐ {doctor.rating}</p>
         </div>
 
         {error && (
@@ -177,8 +188,13 @@ const BookAppointment = () => {
             required
           />
 
-          <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '20px' }}>
-            Confirm Booking
+          <button 
+            type="submit" 
+            className="btn btn-primary" 
+            style={{ width: '100%', marginTop: '20px' }}
+            disabled={submitting}
+          >
+            {submitting ? 'Booking...' : 'Confirm Booking'}
           </button>
         </form>
       </div>

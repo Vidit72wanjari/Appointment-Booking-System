@@ -26,25 +26,33 @@ export default async function handler(req, res) {
 
     if (req.method === 'POST') {
       // Create appointment
-      const { doctorId, doctorName, specialization, date, time, notes } = req.body;
+      const { doctor, date, timeSlot, symptoms } = req.body;
 
-      if (!doctorId || !doctorName || !date || !time) {
+      if (!doctor || !date || !timeSlot || !symptoms) {
         await client.close();
         return res.status(400).json({ message: 'Missing required fields' });
       }
 
+      const doctors = db.collection('doctors');
       const appointments = db.collection('appointments');
       
+      // Get doctor details
+      const doctorDetails = await doctors.findOne({ _id: new ObjectId(doctor) });
+      if (!doctorDetails) {
+        await client.close();
+        return res.status(404).json({ message: 'Doctor not found' });
+      }
+
       const newAppointment = {
         userId: new ObjectId(decoded.userId),
         userEmail: decoded.email,
         userName: decoded.name,
-        doctorId: new ObjectId(doctorId),
-        doctorName,
-        specialization,
+        doctorId: new ObjectId(doctor),
+        doctorName: doctorDetails.name,
+        specialization: doctorDetails.specialization,
         date,
-        time,
-        notes: notes || '',
+        timeSlot,
+        symptoms,
         status: 'scheduled',
         createdAt: new Date()
       };
