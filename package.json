@@ -1,0 +1,16 @@
+{
+  "name": "appointment-booking-system",
+  "version": "1.0.0",
+  "description": "Full-stack appointment booking system",
+  "scripts": {
+    "build": "cd frontend && npm install && npm run build",
+    "start": "cd frontend && npm run preview",
+    "dev": "cd frontend && npm run dev"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Vidit72wanjari/Appointment-Booking-System.git"
+  },
+  "author": "Vidit Wanjari",
+  "license": "MIT"
+}
