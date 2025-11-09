@@ -1,4 +1,5 @@
 // Book Appointment Page
+// Created by: Vidit Wanjari
 
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -9,7 +10,6 @@ const BookAppointment = () => {
   const navigate = useNavigate();
   const [doctor, setDoctor] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     date: '',
     timeSlot: '',
@@ -71,26 +71,15 @@ const BookAppointment = () => {
     }
 
     try {
-      setSubmitting(true);
       const response = await api.post('/appointments', {
         doctor: doctorId,
         ...formData
       });
       
-      setSuccess('🎉 Appointment booked successfully! You will be redirected to your appointments in 3 seconds...');
-      
-      // Clear form
-      setFormData({
-        date: '',
-        timeSlot: '',
-        symptoms: ''
-      });
-      
-      setTimeout(() => navigate('/my-appointments'), 3000);
+      setSuccess('Appointment booked successfully! Redirecting to your appointments...');
+      setTimeout(() => navigate('/my-appointments'), 2000);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to book appointment. Please try again.');
-    } finally {
-      setSubmitting(false);
+      setError(err.response?.data?.message || 'Failed to book appointment');
     }
   };
 
@@ -124,7 +113,7 @@ const BookAppointment = () => {
         
         <h1>Book Appointment</h1>
         <div style={{ background: '#f7fafc', padding: '20px', borderRadius: '8px', marginBottom: '20px' }}>
-          <h2>{doctor.name}</h2>
+          <h2>{doctor.user.name}</h2>
           <p><strong>Specialization:</strong> {doctor.specialization}</p>
           <p><strong>Fee:</strong> ₹{doctor.fee}</p>
         </div>
@@ -145,19 +134,15 @@ const BookAppointment = () => {
           <div style={{ 
             background: '#c6f6d5', 
             color: '#22543d', 
-            padding: '16px', 
-            borderRadius: '8px',
-            marginBottom: '20px',
-            border: '2px solid #48bb78',
-            fontSize: '16px',
-            fontWeight: '500',
-            textAlign: 'center'
+            padding: '12px', 
+            borderRadius: '5px',
+            marginBottom: '20px'
           }}>
             {success}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} style={{ opacity: success ? 0.5 : 1, pointerEvents: success ? 'none' : 'auto' }}>
+        <form onSubmit={handleSubmit}>
           <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
             Select Date
           </label>
@@ -168,13 +153,12 @@ const BookAppointment = () => {
             onChange={handleChange}
             min={new Date().toISOString().split('T')[0]}
             required
-            disabled={submitting || success}
           />
 
           <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
             Select Time Slot
           </label>
-          <select name="timeSlot" value={formData.timeSlot} onChange={handleChange} required disabled={submitting || success}>
+          <select name="timeSlot" value={formData.timeSlot} onChange={handleChange} required>
             <option value="">Choose a time slot</option>
             {timeSlots.map((slot) => (
               <option key={slot} value={slot}>{slot}</option>
@@ -191,21 +175,10 @@ const BookAppointment = () => {
             rows="4"
             placeholder="Please describe your symptoms..."
             required
-            disabled={submitting || success}
           />
 
-          <button 
-            type="submit" 
-            className="btn btn-primary" 
-            style={{ 
-              width: '100%', 
-              marginTop: '20px',
-              opacity: (submitting || success) ? 0.7 : 1,
-              cursor: (submitting || success) ? 'not-allowed' : 'pointer'
-            }}
-            disabled={submitting || success}
-          >
-            {submitting ? '🔄 Booking...' : success ? '✅ Booked!' : 'Confirm Booking'}
+          <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '20px' }}>
+            Confirm Booking
           </button>
         </form>
       </div>

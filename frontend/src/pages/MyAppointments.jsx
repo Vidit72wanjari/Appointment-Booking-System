@@ -1,4 +1,5 @@
 // My Appointments Page
+// Created by: Vidit Wanjari
 
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';

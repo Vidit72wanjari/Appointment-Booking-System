@@ -77,17 +77,6 @@ app.use('*', (req, res) => {
 
 const startServer = async () => {
     try {
-        // Debug environment variables
-        console.log('🔍 Environment Variables Check:');
-        console.log('NODE_ENV:', process.env.NODE_ENV);
-        console.log('PORT:', process.env.PORT);
-        console.log('JWT_SECRET:', process.env.JWT_SECRET ? 'SET' : 'NOT SET');
-        console.log('MONGODB_URI:', process.env.MONGODB_URI ? 'SET' : 'NOT SET');
-        
-        if (!process.env.MONGODB_URI) {
-            throw new Error('MONGODB_URI environment variable is not set');
-        }
-        
         await connectDB();
         const PORT = process.env.PORT || 8080;
         app.listen(PORT, () => {

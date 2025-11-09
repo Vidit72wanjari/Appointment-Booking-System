@@ -4,46 +4,38 @@ const jwt = require('jsonwebtoken');
 
 exports.signup = async (req, res) => {
     try {
-        console.log('📝 Signup request received:', { body: req.body });
         const { name, email, password } = req.body;
 
         if (!name || !email || !password) {
-            console.log('❌ Missing required fields');
             return res.status(400).json({
                 success: false,
                 message: 'Please provide all required fields'
             });
         }
 
-        console.log('🔍 Checking for existing user with email:', email);
         const existingUser = await User.findOne({ email });
         if (existingUser) {
-            console.log('❌ Email already exists');
             return res.status(400).json({
                 success: false,
                 message: 'Email already registered'
             });
         }
 
-        console.log('🔒 Hashing password...');
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
-        console.log('👤 Creating new user...');
         const user = await User.create({
             name,
             email,
             password: hashedPassword
         });
 
-        console.log('🔑 Generating token...');
         const token = jwt.sign(
             { id: user._id },
             process.env.JWT_SECRET,
             { expiresIn: '30d' }
         );
 
-        console.log('✅ User created successfully:', user._id);
         res.status(201).json({
             success: true,
             data: {
@@ -55,11 +47,10 @@ exports.signup = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('💥 Signup error:', error.message);
-        console.error('📊 Error details:', error);
+        console.error('Signup error:', error);
         res.status(500).json({
             success: false,
-            message: 'Error in signup: ' + error.message
+            message: 'Error in signup'
         });
     }
 };
