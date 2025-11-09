@@ -1,6 +1,3 @@
-// Home Page
-// Created by: Vidit Wanjari
-
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../Context/AuthContext';
 
@@ -46,11 +43,6 @@ const Home = () => {
         </div>
       </div>
 
-      <div className="card" style={{ marginTop: '30px', textAlign: 'center', background: '#f7fafc' }}>
-        <p style={{ color: '#666' }}>
-          Developed by <strong style={{ color: '#667eea' }}>Vidit Wanjari</strong>
-        </p>
-      </div>
     </div>
   );
 };

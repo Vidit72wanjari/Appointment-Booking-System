@@ -1,6 +1,3 @@
-// Protected Route Component
-// Created by: Vidit Wanjari
-
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../Context/AuthContext';
 

@@ -5,11 +5,7 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 3000,
-    proxy: {
-      '/api': {
-        target: 'http://localhost:5000',
-        changeOrigin: true
-      }
-    }
+    // For development, we'll use the serverless functions in the api folder
+    // These will be handled by Vercel CLI when deployed
   }
 })

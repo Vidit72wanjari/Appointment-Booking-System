@@ -15,8 +15,12 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       const res = await api.post("/auth/signup", { name, email, password });
-      const userData = res.data.data; // Backend returns data in res.data.data
-      localStorage.setItem("token", userData.token);
+      
+      // Handle the response structure from our serverless API
+      const userData = res.data.user;
+      const token = res.data.token;
+      
+      localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(userData));
       setUser(userData);
       return userData;
@@ -32,8 +36,12 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       const res = await api.post("/auth/login", { email, password });
-      const userData = res.data.data; // Backend returns data in res.data.data
-      localStorage.setItem("token", userData.token);
+      
+      // Handle the response structure from our serverless API
+      const userData = res.data.user;
+      const token = res.data.token;
+      
+      localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(userData));
       setUser(userData);
       return userData;
