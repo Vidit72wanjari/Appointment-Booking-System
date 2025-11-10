@@ -1,14 +1,14 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { getAllDoctors } from '../services/api';
-import { useNavigate, Link } from 'react-router-dom';
-import { AuthContext } from '../Context/AuthContext';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../Context/AuthContext';
+import api from '../services/api';
 
 const DoctorList = () => {
     const [doctors, setDoctors] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const navigate = useNavigate();
-    const { user, logout } = useContext(AuthContext);
+    const { user, logout } = useAuth();
 
     useEffect(() => {
         fetchDoctors();
@@ -16,269 +16,276 @@ const DoctorList = () => {
 
     const fetchDoctors = async () => {
         try {
-            setLoading(true);
-            setError('');
-            const response = await getAllDoctors();
-            console.log('Doctors response:', response.data);
-            
-            // Our API returns doctors array directly
+            const response = await api.get('/doctors');
             setDoctors(response.data);
-        } catch (err) {
-            console.error('Error fetching doctors:', err);
-            setError(err.response?.data?.message || 'Error loading doctors');
-        } finally {
+            setLoading(false);
+        } catch (error) {
+            setError('Failed to load doctors');
             setLoading(false);
         }
     };
 
     const handleBookAppointment = (doctorId) => {
-        if (!user) {
-            navigate('/login');
-            return;
-        }
         navigate(`/book-appointment/${doctorId}`);
-    };
-
-    const handleLogout = () => {
-        logout();
-        navigate('/login');
     };
 
     if (loading) {
         return (
-            <div style={styles.container}>
-                <div style={styles.loading}>Loading doctors...</div>
+            <div style={{ 
+                minHeight: '100vh',
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'white'
+            }}>
+                <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: '3rem', marginBottom: '20px' }}>🏥</div>
+                    <div>Loading doctors...</div>
+                </div>
             </div>
         );
     }
 
     if (error) {
         return (
-            <div style={styles.container}>
-                <div style={styles.error}>
-                    {error}
-                    <button onClick={fetchDoctors} style={styles.retryButton}>
-                        Retry
-                    </button>
+            <div style={{ 
+                minHeight: '100vh',
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'white'
+            }}>
+                <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: '3rem', marginBottom: '20px' }}>❌</div>
+                    <div>{error}</div>
                 </div>
             </div>
         );
     }
 
     return (
-        <div style={styles.pageContainer}>
-            <div style={styles.header}>
-                <h1 style={styles.headerTitle}>Available Doctors</h1>
-                <div style={styles.headerButtons}>
-                    <Link to="/">
-                        <button style={styles.homeButton}>Home</button>
-                    </Link>
-                    {user && (
-                        <>
-                            <Link to="/my-appointments">
-                                <button style={styles.appointmentsButton}>My Appointments</button>
-                            </Link>
-                            <button onClick={handleLogout} style={styles.logoutButton}>
-                                Logout
-                            </button>
-                        </>
-                    )}
+        <div style={{ 
+            minHeight: '100vh',
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            color: 'white'
+        }}>
+            {/* Header */}
+            <div style={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                alignItems: 'center', 
+                padding: '20px 40px',
+                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                backdropFilter: 'blur(10px)'
+            }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                    <h2 style={{ margin: 0 }}>🏥 MediCare</h2>
+                    <span style={{ 
+                        padding: '6px 12px',
+                        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                        borderRadius: '15px',
+                        fontSize: '14px'
+                    }}>
+                        Hello, {user?.name}!
+                    </span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                    <button 
+                        onClick={() => navigate('/home')}
+                        style={{
+                            padding: '8px 16px',
+                            backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                            color: 'white',
+                            border: '1px solid rgba(255, 255, 255, 0.3)',
+                            borderRadius: '20px',
+                            cursor: 'pointer',
+                            fontSize: '14px'
+                        }}
+                    >
+                        🏠 Home
+                    </button>
+                    <button 
+                        onClick={() => navigate('/my-appointments')}
+                        style={{
+                            padding: '8px 16px',
+                            backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                            color: 'white',
+                            border: '1px solid rgba(255, 255, 255, 0.3)',
+                            borderRadius: '20px',
+                            cursor: 'pointer',
+                            fontSize: '14px'
+                        }}
+                    >
+                        📅 My Appointments
+                    </button>
+                    <button 
+                        onClick={logout}
+                        style={{
+                            padding: '8px 16px',
+                            backgroundColor: 'rgba(220, 53, 69, 0.8)',
+                            color: 'white',
+                            border: '1px solid rgba(255, 255, 255, 0.3)',
+                            borderRadius: '20px',
+                            cursor: 'pointer',
+                            fontSize: '14px'
+                        }}
+                    >
+                        Logout
+                    </button>
                 </div>
             </div>
 
-            <div style={styles.container}>
-                {doctors.length === 0 ? (
-                    <div style={styles.noData}>
-                        <p>No doctors available at the moment.</p>
-                    </div>
-                ) : (
-                    <div style={styles.grid}>
-                        {doctors.map((doctor) => (
-                            <div key={doctor._id} style={styles.card}>
-                                <div style={styles.cardHeader}>
-                                    <h2 style={styles.doctorName}>{doctor.name}</h2>
-                                    <span style={styles.rating}>⭐ {doctor.rating}</span>
+            {/* Main Content */}
+            <div style={{ padding: '40px' }}>
+                <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+                    <h1 style={{ 
+                        fontSize: '2.5rem', 
+                        marginBottom: '10px',
+                        textShadow: '2px 2px 4px rgba(0,0,0,0.3)'
+                    }}>
+                        Our Expert Doctors
+                    </h1>
+                    <p style={{ 
+                        fontSize: '1.1rem',
+                        opacity: 0.9,
+                        maxWidth: '600px',
+                        margin: '0 auto'
+                    }}>
+                        Choose from our team of qualified healthcare professionals
+                    </p>
+                </div>
+
+                <div style={{ 
+                    display: 'grid', 
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', 
+                    gap: '30px',
+                    maxWidth: '1200px',
+                    margin: '0 auto'
+                }}>
+                    {doctors.map(doctor => (
+                        <div key={doctor._id} style={{
+                            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                            borderRadius: '20px',
+                            padding: '30px',
+                            boxShadow: '0 15px 35px rgba(0, 0, 0, 0.1)',
+                            border: '1px solid rgba(255, 255, 255, 0.2)',
+                            color: '#333',
+                            transition: 'all 0.3s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.transform = 'translateY(-10px)';
+                            e.currentTarget.style.boxShadow = '0 25px 50px rgba(0, 0, 0, 0.15)';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.transform = 'translateY(0)';
+                            e.currentTarget.style.boxShadow = '0 15px 35px rgba(0, 0, 0, 0.1)';
+                        }}>
+                            <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+                                <div style={{ 
+                                    width: '80px', 
+                                    height: '80px', 
+                                    borderRadius: '50%',
+                                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    fontSize: '2rem',
+                                    margin: '0 auto 15px',
+                                    color: 'white'
+                                }}>
+                                    👨‍⚕️
                                 </div>
-                                
-                                <div style={styles.cardBody}>
-                                    <p style={styles.specialization}>{doctor.specialization}</p>
-                                    <p style={styles.info}>Experience: {doctor.experience}</p>
-                                    <p style={styles.info}>Location: {doctor.location}</p>
-                                    <p style={styles.fee}>₹{doctor.consultationFee || doctor.fee} per consultation</p>
-                                    
-                                    <div style={styles.availability}>
-                                        <strong>Available Time Slots:</strong>
-                                        <p>{doctor.availability?.join(', ')}</p>
-                                    </div>
+                                <h3 style={{ 
+                                    fontSize: '1.4rem', 
+                                    margin: '0 0 5px 0',
+                                    color: '#333'
+                                }}>
+                                    Dr. {doctor.name}
+                                </h3>
+                                <div style={{
+                                    display: 'inline-block',
+                                    padding: '4px 12px',
+                                    backgroundColor: '#e8f4ff',
+                                    color: '#1976d2',
+                                    borderRadius: '15px',
+                                    fontSize: '12px',
+                                    fontWeight: '500'
+                                }}>
+                                    {doctor.specialization}
                                 </div>
-                                
-                                <button
-                                    onClick={() => handleBookAppointment(doctor._id)}
-                                    style={styles.bookButton}
-                                >
-                                    Book Appointment
-                                </button>
                             </div>
-                        ))}
+
+                            <div style={{ marginBottom: '25px' }}>
+                                <div style={{ 
+                                    display: 'flex', 
+                                    justifyContent: 'space-between', 
+                                    marginBottom: '10px',
+                                    padding: '8px 0'
+                                }}>
+                                    <span style={{ color: '#666' }}>Experience:</span>
+                                    <span style={{ fontWeight: '600' }}>{doctor.experience} years</span>
+                                </div>
+                                <div style={{ 
+                                    display: 'flex', 
+                                    justifyContent: 'space-between', 
+                                    marginBottom: '10px',
+                                    padding: '8px 0'
+                                }}>
+                                    <span style={{ color: '#666' }}>Consultation Fee:</span>
+                                    <span style={{ 
+                                        fontWeight: '600',
+                                        color: '#28a745',
+                                        fontSize: '1.1rem'
+                                    }}>
+                                        ₹{doctor.consultationFee}
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <button
+                                onClick={() => handleBookAppointment(doctor._id)}
+                                style={{
+                                    width: '100%',
+                                    padding: '14px',
+                                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                    color: 'white',
+                                    border: 'none',
+                                    borderRadius: '12px',
+                                    cursor: 'pointer',
+                                    fontSize: '16px',
+                                    fontWeight: '600',
+                                    transition: 'all 0.3s ease'
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.target.style.transform = 'translateY(-2px)';
+                                    e.target.style.boxShadow = '0 8px 20px rgba(102, 126, 234, 0.4)';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.target.style.transform = 'translateY(0)';
+                                    e.target.style.boxShadow = 'none';
+                                }}
+                            >
+                                📅 Book Appointment
+                            </button>
+                        </div>
+                    ))}
+                </div>
+
+                {doctors.length === 0 && (
+                    <div style={{ 
+                        textAlign: 'center', 
+                        marginTop: '50px',
+                        color: 'white'
+                    }}>
+                        <div style={{ fontSize: '3rem', marginBottom: '20px' }}>👩‍⚕️</div>
+                        <p style={{ fontSize: '1.2rem' }}>No doctors available at the moment.</p>
                     </div>
                 )}
             </div>
         </div>
     );
-};
-
-const styles = {
-    pageContainer: {
-        minHeight: '100vh',
-        backgroundColor: '#f5f5f5',
-    },
-    header: {
-        backgroundColor: '#1976d2',
-        color: 'white',
-        padding: '20px',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        flexWrap: 'wrap',
-    },
-    headerTitle: {
-        margin: 0,
-        fontSize: '24px',
-    },
-    headerButtons: {
-        display: 'flex',
-        gap: '10px',
-        flexWrap: 'wrap',
-    },
-    homeButton: {
-        padding: '8px 16px',
-        backgroundColor: 'white',
-        color: '#1976d2',
-        border: 'none',
-        borderRadius: '5px',
-        cursor: 'pointer',
-        fontWeight: 'bold',
-    },
-    appointmentsButton: {
-        padding: '8px 16px',
-        backgroundColor: '#4caf50',
-        color: 'white',
-        border: 'none',
-        borderRadius: '5px',
-        cursor: 'pointer',
-        fontWeight: 'bold',
-    },
-    logoutButton: {
-        padding: '8px 16px',
-        backgroundColor: '#f44336',
-        color: 'white',
-        border: 'none',
-        borderRadius: '5px',
-        cursor: 'pointer',
-        fontWeight: 'bold',
-    },
-    container: {
-        maxWidth: '1200px',
-        margin: '0 auto',
-        padding: '20px',
-    },
-    loading: {
-        textAlign: 'center',
-        fontSize: '18px',
-        padding: '50px',
-    },
-    error: {
-        textAlign: 'center',
-        color: '#d32f2f',
-        padding: '20px',
-        backgroundColor: '#ffebee',
-        borderRadius: '8px',
-        margin: '20px',
-    },
-    retryButton: {
-        marginTop: '10px',
-        padding: '10px 20px',
-        backgroundColor: '#1976d2',
-        color: 'white',
-        border: 'none',
-        borderRadius: '5px',
-        cursor: 'pointer',
-    },
-    noData: {
-        textAlign: 'center',
-        padding: '50px',
-        fontSize: '16px',
-        color: '#666',
-    },
-    grid: {
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-        gap: '20px',
-    },
-    card: {
-        border: '1px solid #ddd',
-        borderRadius: '10px',
-        padding: '20px',
-        backgroundColor: 'white',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-        transition: 'transform 0.2s',
-    },
-    cardHeader: {
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: '15px',
-    },
-    doctorName: {
-        fontSize: '20px',
-        fontWeight: 'bold',
-        color: '#333',
-        margin: 0,
-    },
-    rating: {
-        fontSize: '16px',
-        fontWeight: 'bold',
-        color: '#ff9800',
-    },
-    cardBody: {
-        marginBottom: '15px',
-    },
-    specialization: {
-        fontSize: '16px',
-        color: '#1976d2',
-        fontWeight: '600',
-        marginBottom: '10px',
-    },
-    info: {
-        fontSize: '14px',
-        color: '#666',
-        margin: '5px 0',
-    },
-    fee: {
-        fontSize: '18px',
-        fontWeight: 'bold',
-        color: '#2e7d32',
-        margin: '10px 0',
-    },
-    availability: {
-        marginTop: '10px',
-        padding: '10px',
-        backgroundColor: '#f5f5f5',
-        borderRadius: '5px',
-        fontSize: '14px',
-    },
-    bookButton: {
-        width: '100%',
-        padding: '12px',
-        backgroundColor: '#1976d2',
-        color: 'white',
-        border: 'none',
-        borderRadius: '5px',
-        fontSize: '16px',
-        fontWeight: 'bold',
-        cursor: 'pointer',
-        transition: 'background-color 0.2s',
-    },
 };
 
 export default DoctorList;

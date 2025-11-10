@@ -1,72 +1,74 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
-import api from "../services/api";
+import { createContext, useContext, useState, useEffect } from 'react';
+import api from '../services/api';
 
-export const AuthContext = createContext();
+const AuthContext = createContext();
+
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(() => {
-    const storedUser = localStorage.getItem("user");
-    return storedUser ? JSON.parse(storedUser) : null;
-  });
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const [loading, setLoading] = useState(false);
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const storedUser = localStorage.getItem('user');
+    
+    if (token && storedUser) {
+      try {
+        const userData = JSON.parse(storedUser);
+        setUser(userData);
+      } catch (error) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+      }
+    }
+    setLoading(false);
+  }, []);
 
   const signup = async (name, email, password) => {
-    try {
-      setLoading(true);
-      const res = await api.post("/auth/signup", { name, email, password });
-      
-      // Handle the response structure from our serverless API
-      const userData = res.data.user;
-      const token = res.data.token;
-      
-      localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(userData));
-      setUser(userData);
-      return userData;
-    } catch (error) {
-      console.error("Signup error:", error);
-      throw error;
-    } finally {
-      setLoading(false);
-    }
+    const res = await api.post('/auth/signup', { name, email, password });
+    
+    const userData = res.data.user;
+    const token = res.data.token;
+    
+    localStorage.setItem('token', token);
+    localStorage.setItem('user', JSON.stringify(userData));
+    setUser(userData);
+    return userData;
   };
 
   const login = async (email, password) => {
-    try {
-      setLoading(true);
-      const res = await api.post("/auth/login", { email, password });
-      
-      // Handle the response structure from our serverless API
-      const userData = res.data.user;
-      const token = res.data.token;
-      
-      localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(userData));
-      setUser(userData);
-      return userData;
-    } catch (error) {
-      console.error("Login error:", error);
-      throw error;
-    } finally {
-      setLoading(false);
-    }
+    const res = await api.post('/auth/login', { email, password });
+    
+    const userData = res.data.user;
+    const token = res.data.token;
+    
+    localStorage.setItem('token', token);
+    localStorage.setItem('user', JSON.stringify(userData));
+    setUser(userData);
+    return userData;
   };
 
   const logout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
     setUser(null);
-    // Force page reload to ensure clean state
     window.location.href = '/login';
   };
 
-  return (
-    <AuthContext.Provider value={{ user, signup, login, logout, loading }}>
-      {children}
-    </AuthContext.Provider>
-  );
-};
+  const value = {
+    user,
+    loading,
+    signup,
+    login,
+    logout,
+  };
 
-// ✅ Correct export for custom hook
-export const useAuth = () => useContext(AuthContext);
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+};

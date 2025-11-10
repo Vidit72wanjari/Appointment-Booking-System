@@ -1,92 +1,215 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const mongoose = require('mongoose');
+const connectDB = require('./config/db');
+const authRoutes = require('./routes/authRoutes');
+const Appointment = require('./models/Appointment');
 
 const app = express();
 
-app.use(cors({
-    origin: ['http://localhost:3000', 'http://localhost:3001'],
-    credentials: true
-}));
+connectDB();
 
+app.use(cors());
 app.use(express.json());
 
-app.use((req, res, next) => {
-    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
-    next();
+app.use('/api/auth', authRoutes);
+
+// Simple doctors route
+app.get('/api/doctors', (req, res) => {
+    const doctors = [
+        {
+            _id: '1',
+            name: 'Salman Khan',
+            specialization: 'Cardiology',
+            experience: 15,
+            consultationFee: 2500,
+            email: 'salman@medicareplus.com',
+            phone: '+91-9876543210'
+        },
+        {
+            _id: '2',
+            name: 'Shah Rukh Khan',
+            specialization: 'Dermatology',
+            experience: 18,
+            consultationFee: 3000,
+            email: 'shahrukh@medicareplus.com',
+            phone: '+91-9876543211'
+        },
+        {
+            _id: '3',
+            name: 'Aamir Khan',
+            specialization: 'Orthopedics',
+            experience: 20,
+            consultationFee: 3500,
+            email: 'aamir@medicareplus.com',
+            phone: '+91-9876543212'
+        },
+        {
+            _id: '4',
+            name: 'Akshay Kumar',
+            specialization: 'General Medicine',
+            experience: 12,
+            consultationFee: 2000,
+            email: 'akshay@medicareplus.com',
+            phone: '+91-9876543213'
+        },
+        {
+            _id: '5',
+            name: 'Hrithik Roshan',
+            specialization: 'Neurology',
+            experience: 14,
+            consultationFee: 4000,
+            email: 'hrithik@medicareplus.com',
+            phone: '+91-9876543214'
+        },
+        {
+            _id: '6',
+            name: 'Ranveer Singh',
+            specialization: 'Pediatrics',
+            experience: 10,
+            consultationFee: 2200,
+            email: 'ranveer@medicareplus.com',
+            phone: '+91-9876543215'
+        }
+    ];
+    res.json(doctors);
 });
 
-// API Routes
-app.use('/api/auth', require('./routes/authRoutes'));
-app.use('/api/doctors', require('./routes/doctorRoutes'));
-app.use('/api/appointments', require('./routes/appointmentRoutes'));
+app.get('/api/doctors/:id', (req, res) => {
+    const doctors = [
+        {
+            _id: '1',
+            name: 'Salman Khan',
+            specialization: 'Cardiology',
+            experience: 15,
+            consultationFee: 2500,
+            email: 'salman@medicareplus.com',
+            phone: '+91-9876543210'
+        },
+        {
+            _id: '2',
+            name: 'Shah Rukh Khan',
+            specialization: 'Dermatology',
+            experience: 18,
+            consultationFee: 3000,
+            email: 'shahrukh@medicareplus.com',
+            phone: '+91-9876543211'
+        },
+        {
+            _id: '3',
+            name: 'Aamir Khan',
+            specialization: 'Orthopedics',
+            experience: 20,
+            consultationFee: 3500,
+            email: 'aamir@medicareplus.com',
+            phone: '+91-9876543212'
+        },
+        {
+            _id: '4',
+            name: 'Akshay Kumar',
+            specialization: 'General Medicine',
+            experience: 12,
+            consultationFee: 2000,
+            email: 'akshay@medicareplus.com',
+            phone: '+91-9876543213'
+        },
+        {
+            _id: '5',
+            name: 'Hrithik Roshan',
+            specialization: 'Neurology',
+            experience: 14,
+            consultationFee: 4000,
+            email: 'hrithik@medicareplus.com',
+            phone: '+91-9876543214'
+        },
+        {
+            _id: '6',
+            name: 'Ranveer Singh',
+            specialization: 'Pediatrics',
+            experience: 10,
+            consultationFee: 2200,
+            email: 'ranveer@medicareplus.com',
+            phone: '+91-9876543215'
+        }
+    ];
+    const doctor = doctors.find(d => d._id === req.params.id);
+    res.json(doctor || {});
+});
 
-app.get('/health', (req, res) => {
-    res.json({
-        status: 'ok',
-        message: 'Server is running',
-        timestamp: new Date().toISOString(),
-        mongodb: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected'
-    });
+// MongoDB-based appointments routes
+app.post('/api/appointments', async (req, res) => {
+    try {
+        const { doctorId, patientName, appointmentDate, timeSlot, reason } = req.body;
+        
+        const doctors = [
+            { _id: '1', name: 'Salman Khan', specialization: 'Cardiology', consultationFee: 2500 },
+            { _id: '2', name: 'Shah Rukh Khan', specialization: 'Dermatology', consultationFee: 3000 },
+            { _id: '3', name: 'Aamir Khan', specialization: 'Orthopedics', consultationFee: 3500 },
+            { _id: '4', name: 'Akshay Kumar', specialization: 'General Medicine', consultationFee: 2000 },
+            { _id: '5', name: 'Hrithik Roshan', specialization: 'Neurology', consultationFee: 4000 },
+            { _id: '6', name: 'Ranveer Singh', specialization: 'Pediatrics', consultationFee: 2200 }
+        ];
+        
+        const doctor = doctors.find(d => d._id === doctorId);
+        
+        // Get user ID from headers (in a real app, from JWT token)
+        const userId = req.headers['user-id'] || '507f1f77bcf86cd799439011'; // Default for demo
+        
+        const appointment = new Appointment({
+            doctorId: doctorId,
+            doctorName: doctor ? doctor.name : 'Unknown Doctor',
+            specialization: doctor ? doctor.specialization : 'General',
+            consultationFee: doctor ? doctor.consultationFee : 0,
+            patientName,
+            patientId: userId,
+            appointmentDate: new Date(appointmentDate),
+            timeSlot,
+            reason,
+            status: 'confirmed'
+        });
+        
+        const savedAppointment = await appointment.save();
+        
+        res.json({ 
+            success: true, 
+            message: 'Appointment booked successfully',
+            appointment: savedAppointment
+        });
+    } catch (error) {
+        console.error('Error booking appointment:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Failed to book appointment',
+            error: error.message 
+        });
+    }
+});
+
+app.get('/api/appointments/my', async (req, res) => {
+    try {
+        // Get user ID from headers (in a real app, from JWT token)
+        const userId = req.headers['user-id'] || '507f1f77bcf86cd799439011'; // Default for demo
+        
+        const appointments = await Appointment.find({ patientId: userId })
+            .sort({ appointmentDate: 1, timeSlot: 1 });
+        
+        res.json(appointments);
+    } catch (error) {
+        console.error('Error fetching appointments:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Failed to fetch appointments',
+            error: error.message 
+        });
+    }
 });
 
 app.get('/', (req, res) => {
-    res.json({
-        success: true,
-        message: 'Doctor Appointment Booking API',
-        endpoints: {
-            auth: '/api/auth',
-            doctors: '/api/doctors',
-            appointments: '/api/appointments',
-            health: '/health'
-        }
-    });
+    res.json({ message: 'Authentication API' });
 });
 
-const connectDB = async (retries = 5) => {
-    while (retries) {
-        try {
-            await mongoose.connect(process.env.MONGODB_URI);
-            console.log('✅ MongoDB Connected');
-            return true;
-        } catch (error) {
-            console.error(`❌ Connection attempt failed. Retries left: ${retries-1}`);
-            retries -= 1;
-            if (retries === 0) throw error;
-            await new Promise(resolve => setTimeout(resolve, 5000));
-        }
-    }
-};
+const PORT = process.env.PORT || 5000;
 
-app.use((err, req, res, next) => {
-    console.error('Server Error:', err);
-    res.status(err.status || 500).json({
-        success: false,
-        message: err.message || 'Internal server error',
-        error: process.env.NODE_ENV === 'development' ? err.stack : undefined
-    });
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
 });
-
-app.use('*', (req, res) => {
-    res.status(404).json({
-        success: false,
-        message: 'Route not found'
-    });
-});
-
-const startServer = async () => {
-    try {
-        await connectDB();
-        const PORT = process.env.PORT || 8080;
-        app.listen(PORT, () => {
-            console.log(`✅ Server running on http://localhost:${PORT}`);
-            console.log(`✅ API Documentation: http://localhost:${PORT}/`);
-        });
-    } catch (error) {
-        console.error('❌ Failed to start server:', error);
-        process.exit(1);
-    }
-};
-
-startServer();

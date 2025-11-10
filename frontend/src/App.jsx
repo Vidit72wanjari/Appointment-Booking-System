@@ -1,33 +1,52 @@
-import React from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import { useAuth } from "./Context/AuthContext";
-import ProtectedRoute from "./components/ProtectedRoute";
-import Login from "./pages/Login";
-import Signup from "./pages/Signup";
-import DoctorList from "./pages/DoctorList";
-import BookAppointment from "./pages/BookAppointment";
-import MyAppointments from "./pages/MyAppointments";
-import Home from "./pages/Home";
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider, useAuth } from './Context/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
+import Login from './pages/Login';
+import Signup from './pages/Signup';
+import Home from './pages/Home';
+import DoctorList from './pages/DoctorList';
+import BookAppointment from './pages/BookAppointment';
+import MyAppointments from './pages/MyAppointments';
 
-function App() {
-    const { user } = useAuth();
+function AppContent() {
+    const { user, loading } = useAuth();
+
+    if (loading) {
+        return (
+            <div style={{ 
+                display: 'flex', 
+                justifyContent: 'center', 
+                alignItems: 'center', 
+                height: '100vh',
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                color: 'white',
+                fontSize: '18px'
+            }}>
+                <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: '3rem', marginBottom: '20px' }}>🏥</div>
+                    <div>Loading MediCare...</div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <Router>
             <Routes>
-                {/* Public routes - only accessible when not logged in */}
+                <Route 
+                    path="/" 
+                    element={user ? <Navigate to="/doctors" /> : <Navigate to="/login" />} 
+                />
                 <Route 
                     path="/login" 
-                    element={!user ? <Login /> : <Navigate to="/" replace />} 
+                    element={!user ? <Login /> : <Navigate to="/doctors" />} 
                 />
                 <Route 
                     path="/signup" 
-                    element={!user ? <Signup /> : <Navigate to="/" replace />} 
+                    element={!user ? <Signup /> : <Navigate to="/doctors" />} 
                 />
-                
-                {/* Protected routes - only accessible when logged in */}
                 <Route 
-                    path="/" 
+                    path="/home" 
                     element={
                         <ProtectedRoute>
                             <Home />
@@ -58,14 +77,16 @@ function App() {
                         </ProtectedRoute>
                     } 
                 />
-                
-                {/* Default redirect */}
-                <Route 
-                    path="*" 
-                    element={<Navigate to={user ? "/" : "/login"} replace />} 
-                />
             </Routes>
         </Router>
+    );
+}
+
+function App() {
+    return (
+        <AuthProvider>
+            <AppContent />
+        </AuthProvider>
     );
 }
 

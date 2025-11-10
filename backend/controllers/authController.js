@@ -6,13 +6,6 @@ exports.signup = async (req, res) => {
     try {
         const { name, email, password } = req.body;
 
-        if (!name || !email || !password) {
-            return res.status(400).json({
-                success: false,
-                message: 'Please provide all required fields'
-            });
-        }
-
         const existingUser = await User.findOne({ email });
         if (existingUser) {
             return res.status(400).json({
@@ -21,8 +14,7 @@ exports.signup = async (req, res) => {
             });
         }
 
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(password, salt);
+        const hashedPassword = await bcrypt.hash(password, 10);
 
         const user = await User.create({
             name,
@@ -38,19 +30,18 @@ exports.signup = async (req, res) => {
 
         res.status(201).json({
             success: true,
-            data: {
+            user: {
                 _id: user._id,
                 name: user.name,
-                email: user.email,
-                token
-            }
+                email: user.email
+            },
+            token
         });
 
     } catch (error) {
-        console.error('Signup error:', error);
         res.status(500).json({
             success: false,
-            message: 'Error in signup'
+            message: 'Server error'
         });
     }
 };
@@ -59,18 +50,11 @@ exports.login = async (req, res) => {
     try {
         const { email, password } = req.body;
 
-        if (!email || !password) {
-            return res.status(400).json({
-                success: false,
-                message: 'Please provide email and password'
-            });
-        }
-
         const user = await User.findOne({ email });
         if (!user) {
             return res.status(401).json({
                 success: false,
-                message: 'Invalid credentials'
+                message: 'Invalid email or password'
             });
         }
 
@@ -78,7 +62,7 @@ exports.login = async (req, res) => {
         if (!isMatch) {
             return res.status(401).json({
                 success: false,
-                message: 'Invalid credentials'
+                message: 'Invalid email or password'
             });
         }
 
@@ -88,21 +72,20 @@ exports.login = async (req, res) => {
             { expiresIn: '30d' }
         );
 
-        res.status(200).json({
+        res.json({
             success: true,
-            data: {
+            user: {
                 _id: user._id,
                 name: user.name,
-                email: user.email,
-                token
-            }
+                email: user.email
+            },
+            token
         });
 
     } catch (error) {
-        console.error('Login error:', error);
         res.status(500).json({
             success: false,
-            message: 'Error in login'
+            message: 'Server error'
         });
     }
 };
